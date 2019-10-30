@@ -118,7 +118,7 @@ class Axis(DataSet):
     """This class is used to represent the horizontal axis like on a Transient or DC Sweep Simulation."""
 
     def __init__(self, name, datatype, datalen, numerical_type='real'):
-        super().__init__(name, datatype, datalen, numerical_type)
+        super(Axis, self).__init__(name, datatype, datalen, numerical_type)
         self.step_info = None
 
     def _set_steps(self, step_info):
@@ -169,12 +169,12 @@ class Trace(DataSet):
     """Class used for storing generic traces that report to a given Axis."""
 
     def __init__(self, name, datatype, datalen, axis, numerical_type='real'):
-        super().__init__(name, datatype, datalen, numerical_type)
+        super(Trace, self).__init__(name, datatype, datalen, numerical_type)
         self.axis = axis
 
     def get_point(self, n=0, step=0):
         if self.axis is None:
-            return super().get_point(n)
+            return super(Trace, self).get_point(n)
         else:
             return self.data[self.axis.step_offset(step) + n]
 
@@ -182,7 +182,7 @@ class Trace(DataSet):
         #print('step size %d' % step)
         #print(self.data[self.axis.step_offset(step):self.axis.step_offset(step + 1)])
         if self.axis is None:
-            return super().get_wave()
+            return super(Trace, self).get_wave()
         else:
             if step==0:
                 return self.data
@@ -481,7 +481,7 @@ class LTSpiceRawRead(object):
                     except:
                         pass
                         # Leave value as a string to accomodate cases as temperature steps
-                        # Temperature steps have the form '.step temp=25°C'
+                        # Temperature steps have the form '.step temp=25C'
                     step_dict[key] = value
 
                 if self.steps is None:
@@ -647,7 +647,7 @@ class RawRead(object):
                     except:
                         pass
                         # Leave value as a string to accomodate cases as temperature steps
-                        # Temperature steps have the form '.step temp=25°C'
+                        # Temperature steps have the form '.step temp=25C'
                     step_dict[key] = value
                 if self.steps is None:
                     self.steps = [step_dict]
@@ -685,44 +685,41 @@ class RawRead(object):
             else:
                 return range(len(self.steps))  # Returns all the steps
 
-if __name__ == "__main__":
-    import sys
-    import matplotlib.pyplot as plt
-    import os
-    directory = os.getcwd()
-    
-    if len(sys.argv) > 1:
-        raw_filename = sys.argv[1]
-    else:
-        test_directory = directory + '/test_files/'
-        filename = 'testfile.raw'
-        raw_filename = test_directory + filename
 
-    LTR = LTSpiceRawRead(raw_filename)
+import sys
+import matplotlib.pyplot as plt
+import os
+directory = os.getcwd()
+    
+test_directory = directory + '\\test_files\\'
+filename = 'testfile.raw'
+raw_filename = test_directory + filename
 
-    print(LTR.get_trace_names())
-    print(LTR.get_raw_property())
+LTR = LTSpiceRawRead(raw_filename)
+
+print(LTR.get_trace_names())
+print(LTR.get_raw_property())
     
-    plt.figure()
+plt.figure()
     
-    volt_1 = LTR.get_trace('V(in)')
-    volt_2 = LTR.get_trace('V(out)')
-    input_curves = []
-    output_curves= []
-    x = LTR.get_trace('time')  # Zero is always the X axis
-    #steps = LTR.get_steps(ana=4.0)
-    steps = LTR.get_steps()
-    for step in steps:
-        plt.subplot(2,1,1)
-        plt.grid(True)
-        plt.plot(x.get_wave(step), volt_1.get_wave(step))
-        input_curves.append(volt_1.get_wave(step))
-        plt.xlim([0.9e-3, 1.2e-3])
-        plt.subplot(2,1,2)
-        plt.plot(x.get_wave(step), volt_2.get_wave(step))
-        output_curves.append(volt_2.get_wave(step))
-        plt.grid(True)
-        plt.xlim([0.9e-3, 1.2e-3])
+volt_1 = LTR.get_trace('V(in)')
+volt_2 = LTR.get_trace('V(out)')
+input_curves = []
+output_curves= []
+x = LTR.get_trace('time')  # Zero is always the X axis
+#steps = LTR.get_steps(ana=4.0)
+steps = LTR.get_steps()
+for step in steps:
+    plt.subplot(2,1,1)
+    plt.grid(True)
+    plt.plot(x.get_wave(step), volt_1.get_wave(step))
+    input_curves.append(volt_1.get_wave(step))
+    plt.xlim([0.9e-3, 1.2e-3])
+    plt.subplot(2,1,2)
+    plt.plot(x.get_wave(step), volt_2.get_wave(step))
+    output_curves.append(volt_2.get_wave(step))
+    plt.grid(True)
+    plt.xlim([0.9e-3, 1.2e-3])
         #plt.plot(y.get_wave(step))
         #plt.plot(x.get_wave(step),marker='x')
         #plt.plot(x.get_wave(step), y.get_wave(step), label=LTR.steps[step])
